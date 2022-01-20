@@ -1,4 +1,6 @@
-from marshmallow import fields, Schema
+from marshmallow import fields, post_load, Schema
+
+from models import Eval
 
 
 class EvalSchema(Schema):
@@ -13,6 +15,10 @@ class EvalSchema(Schema):
     evaluator = fields.Nested('UserSchema', dump_only=True)
     evaluatee = fields.Nested('UserSchema', dump_only=True)
     cohort = fields.Nested('CohortSchema', dump_only=True)
+
+    @post_load
+    def make_eval(self, data, **kwargs):
+        return Eval(**data)
 
 
 class UserSchema(Schema):

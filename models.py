@@ -1,6 +1,7 @@
+import datetime
+
 from sqlalchemy import (
     BigInteger,
-    Boolean,
     Column,
     Date,
     ForeignKey,
@@ -8,7 +9,7 @@ from sqlalchemy import (
     SmallInteger,
     String
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 
 from database import Base
 
@@ -26,6 +27,33 @@ class Eval(Base):
     evaluator = relationship('User', foreign_keys=[evaluator_id])
     evaluatee = relationship('User', foreign_keys=[evaluatee_id])
     cohort = relationship('Cohort')
+
+    @validates('evaluator_id', 'evaluatee_id')
+    def validate_evaluator_id(self, key, value):
+        if type(value) is not int:
+            raise TypeError
+
+        if len(str(value)) != 18:
+            raise ValueError
+
+        if key == 'evaluatee_id' and value == self.evaluator_id:
+            raise ValueError
+
+        return value
+
+    @validates('cohort_id')
+    def validate_cohort_id(self, key, cohort_id):
+        if type(cohort_id) is not int:
+            raise TypeError
+
+        return cohort_id
+
+    @validates('date')
+    def validate_date(self, key, date):
+        if type(date) is not datetime.date:
+            raise TypeError
+
+        return date
 
 
 class User(Base):
