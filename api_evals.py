@@ -154,3 +154,27 @@ def update_eval(id):
         }
 
         return data, 400
+
+
+@api_evals.route('/evals/<int:id>', methods=['DELETE'])
+def delete_eval(id):
+    eval = Eval.query.filter_by(id=id).one_or_none()
+
+    if eval is not None:
+        db_session.delete(eval)
+        db_session.commit()
+        data = {
+            'title': 'OK',
+            'status': 200,
+            'detail': f'Eval {id} deleted'
+        }
+
+        return data, 200
+    else:
+        data = {
+            'title': 'Not Found',
+            'status': 404,
+            'detail': f'Eval {id} not found'
+        }
+
+        return data, 404
