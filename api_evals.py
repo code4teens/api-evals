@@ -84,3 +84,21 @@ def create_eval():
         }
 
         return data, 400
+
+
+@api_evals.route('/evals/<int:id>')
+def get_eval(id):
+    eval = Eval.query.filter_by(id=id).one_or_none()
+
+    if eval is not None:
+        data = EvalSchema().dump(eval)
+
+        return data, 200
+    else:
+        data = {
+            'title': 'Not Found',
+            'status': 404,
+            'detail': f'Eval {id} not found'
+        }
+
+        return data, 404
