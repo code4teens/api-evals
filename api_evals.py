@@ -102,3 +102,55 @@ def get_eval(id):
         }
 
         return data, 404
+
+
+@api_evals.route('/evals/<int:id>', methods=['PUT'])
+def update_eval(id):
+    keys = [
+        'evaluator_id',
+        'evaluatee_id',
+        'cohort_id',
+        'date',
+        'review',
+        'feedback'
+    ]
+
+    if all(key in keys for key in request.json):
+        existing_eval = Eval.query.filter_by(id=id).one_or_none()
+
+        if existing_eval is not None:
+            eval_schema = EvalSchema()
+
+            try:
+                eval = eval_schema.load(request.json)
+            except Exception as _:
+                data = {
+                    'title': 'Bad Request',
+                    'status': 400,
+                    'detail': 'Some values failed validation'
+                }
+
+                return data, 400
+            else:
+                eval.id = existing_eval.id
+                db_session.merge(eval)
+                db_session.commit()
+                data = eval_schema.dump(existing_eval)
+
+                return data, 200
+        else:
+            data = {
+                'title': 'Not Found',
+                'status': 404,
+                'detail': f'Eval {id} not found'
+            }
+
+            return data, 404
+    else:
+        data = {
+            'title': 'Bad Request',
+            'status': 400,
+            'detail': 'Missing some keys or contains extra keys'
+        }
+
+        return data, 400
