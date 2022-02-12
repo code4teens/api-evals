@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from sqlalchemy import exc
 
 from database import db_session
 from models import Cohort, Eval, User
@@ -134,10 +135,21 @@ def update_eval(id):
             else:
                 eval.id = existing_eval.id
                 db_session.merge(eval)
-                db_session.commit()
-                data = eval_schema.dump(existing_eval)
 
-                return data, 200
+                try:
+                    db_session.commit()
+                except exc.IntegrityError as _:
+                    data = {
+                        'title': 'Bad Request',
+                        'status': 400,
+                        'detail': 'Some values failed validation'
+                    }
+
+                    return data, 400
+                else:
+                    data = eval_schema.dump(existing_eval)
+
+                    return data, 200
         else:
             data = {
                 'title': 'Not Found',
